@@ -48,6 +48,32 @@ def to_pyg(g, dev):
     return g_pre, g_suc, g_dis
 
 
+class MLP(torch.nn.Module):
+    def __init__(self,
+                 num_layers,
+                 in_chnl=8,
+                 hidden_chnl=256,
+                 out_chnl=8):
+        super(MLP, self).__init__()
+
+        self.layers = torch.nn.ModuleList()
+
+        for l in range(num_layers):
+            if l == 0:  # first layer
+                self.layers.append(torch.nn.Linear(in_chnl, hidden_chnl))
+                self.layers.append(torch.nn.ReLU())
+                if num_layers == 1:
+                    self.layers.append(torch.nn.Linear(hidden_chnl, out_chnl))
+            elif l < num_layers - 1:  # hidden layers
+                self.layers.append(torch.nn.Linear(hidden_chnl, hidden_chnl))
+                self.layers.append(torch.nn.ReLU())
+            else:  # last layer
+                self.layers.append(torch.nn.Linear(hidden_chnl, hidden_chnl))
+                self.layers.append(torch.nn.ReLU())
+                self.layers.append(torch.nn.Linear(hidden_chnl, out_chnl))
+
+
+
 class RLGNNLayer(torch.nn.Module):
     def __init__(self, in_chnl, out_chnl):
         super(RLGNNLayer, self).__init__()
