@@ -72,6 +72,10 @@ class MLP(torch.nn.Module):
                 self.layers.append(torch.nn.ReLU())
                 self.layers.append(torch.nn.Linear(hidden_chnl, out_chnl))
 
+    def forward(self, h):
+        for lyr in self.layers:
+            h = lyr(h)
+        print(h)
 
 
 class RLGNNLayer(torch.nn.Module):
@@ -96,3 +100,7 @@ if __name__ == '__main__':
     g_pre, g_suc, g_dis = to_pyg(g, dev)
 
     print(g_pre.x)
+
+    mlp = MLP(num_layers=1).to(dev)
+    out = mlp(g_pre.x)
+    mlp_grad = torch.autograd.grad(out.mean(), [param for param in mlp.parameters()])
