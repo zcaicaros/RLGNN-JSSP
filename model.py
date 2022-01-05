@@ -8,6 +8,18 @@ from torch_geometric.data import Data
 import networkx as nx
 
 
+def count_parameters(model, verbose=False):
+    """
+    model: torch nn
+    """
+    pytorch_total_params = sum(p.numel() for p in model.parameters())
+    if verbose:
+        for name, param in model.named_parameters():
+            if param.requires_grad:
+                print(name, param.data)
+    print('Model:', model, 'has {} parameters'.format(pytorch_total_params))
+
+
 def to_pyg(g, dev):
 
     x = []
@@ -50,7 +62,7 @@ def to_pyg(g, dev):
 
 class MLP(torch.nn.Module):
     def __init__(self,
-                 num_layers,
+                 num_layers=2,
                  in_chnl=8,
                  hidden_chnl=256,
                  out_chnl=8):
@@ -64,7 +76,7 @@ class MLP(torch.nn.Module):
                 self.layers.append(torch.nn.ReLU())
                 if num_layers == 1:
                     self.layers.append(torch.nn.Linear(hidden_chnl, out_chnl))
-            elif l < num_layers - 1:  # hidden layers
+            elif l <= num_layers - 2:  # hidden layers
                 self.layers.append(torch.nn.Linear(hidden_chnl, hidden_chnl))
                 self.layers.append(torch.nn.ReLU())
             else:  # last layer
@@ -75,11 +87,15 @@ class MLP(torch.nn.Module):
     def forward(self, h):
         for lyr in self.layers:
             h = lyr(h)
-        print(h)
+        return h
 
 
 class RLGNNLayer(torch.nn.Module):
-    def __init__(self, in_chnl, out_chnl):
+    def __init__(self,
+                 num_layers,
+                 in_chnl,
+                 hidden_chnl,
+                 out_chnl):
         super(RLGNNLayer, self).__init__()
 
 
@@ -99,8 +115,9 @@ if __name__ == '__main__':
 
     g_pre, g_suc, g_dis = to_pyg(g, dev)
 
-    print(g_pre.x)
-
-    mlp = MLP(num_layers=1).to(dev)
+    mlp = MLP().to(dev)
+    # count_parameters(mlp)
     out = mlp(g_pre.x)
     mlp_grad = torch.autograd.grad(out.mean(), [param for param in mlp.parameters()])
+
+
