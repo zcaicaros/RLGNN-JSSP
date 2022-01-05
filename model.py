@@ -11,13 +11,14 @@ import networkx as nx
 def to_pyg(g, dev):
 
     x = []
-    x.append(np.fromiter(nx.get_node_attributes(g, 'type').values(), dtype=np.float32))
-    x.append(np.fromiter(nx.get_node_attributes(g, 'processing_time').values(), dtype=np.float32))
-    x.append(np.fromiter(nx.get_node_attributes(g, 'complete_ratio').values(), dtype=np.float32))
-    x.append(np.fromiter(nx.get_node_attributes(g, 'remaining_ops').values(), dtype=np.float32))
-    x.append(np.fromiter(nx.get_node_attributes(g, 'waiting_time').values(), dtype=np.float32))
-    x.append(np.fromiter(nx.get_node_attributes(g, 'remain_time').values(), dtype=np.float32))
-    x = np.stack(x).transpose()
+    one_hot = np.eye(3, dtype=np.float32)[np.fromiter(nx.get_node_attributes(g, 'type').values(), dtype=np.int32)]
+    x.append(one_hot)
+    x.append(np.fromiter(nx.get_node_attributes(g, 'processing_time').values(), dtype=np.float32).reshape(-1, 1))
+    x.append(np.fromiter(nx.get_node_attributes(g, 'complete_ratio').values(), dtype=np.float32).reshape(-1, 1))
+    x.append(np.fromiter(nx.get_node_attributes(g, 'remaining_ops').values(), dtype=np.float32).reshape(-1, 1))
+    x.append(np.fromiter(nx.get_node_attributes(g, 'waiting_time').values(), dtype=np.float32).reshape(-1, 1))
+    x.append(np.fromiter(nx.get_node_attributes(g, 'remain_time').values(), dtype=np.float32).reshape(-1, 1))
+    x = np.concatenate(x, axis=1)
     x = torch.from_numpy(x)
 
     for n in g.nodes:
@@ -67,3 +68,5 @@ if __name__ == '__main__':
     g, r, done = s.observe()
 
     g_pre, g_suc, g_dis = to_pyg(g, dev)
+
+    print(g_pre.x)
