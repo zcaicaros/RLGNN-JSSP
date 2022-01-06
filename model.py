@@ -104,6 +104,7 @@ class RLGNNLayer(MessagePassing):
         self.module_pre = MLP(num_layers=num_mlp_layer, in_chnl=in_chnl, hidden_chnl=hidden_chnl, out_chnl=out_chnl)
         self.module_suc = MLP(num_layers=num_mlp_layer, in_chnl=in_chnl, hidden_chnl=hidden_chnl, out_chnl=out_chnl)
         self.module_dis = MLP(num_layers=num_mlp_layer, in_chnl=in_chnl, hidden_chnl=hidden_chnl, out_chnl=out_chnl)
+        self.module_merge = MLP(num_layers=num_mlp_layer, in_chnl=6*out_chnl, hidden_chnl=hidden_chnl, out_chnl=out_chnl)
 
     def reset_parameters(self):
         reset(self.module_pre)
@@ -132,18 +133,19 @@ class RLGNNLayer(MessagePassing):
         out_suc = self.module_suc(out_suc)
         out_dis = self.module_dis(out_dis)
 
-        # prepare new graph node features
-        x = torch.cat([relu(out_pre),
+        # merge different h
+        h = torch.cat([relu(out_pre),
                        relu(out_suc),
                        relu(out_dis),
                        relu(h_before_process.sum(dim=0).tile(num_nodes, 1)),
                        h_before_process,
-                       raw_feature])
+                       raw_feature], dim=1)
+        h = self.module_merge(h)
 
         # new graphs after processed by this layer
-        graph_pre = Data(x=x, edge_index=graph_pre.edge_index)
-        graph_suc = Data(x=x, edge_index=graph_suc.edge_index)
-        graph_dis = Data(x=x, edge_index=graph_dis.edge_index)
+        graph_pre = Data(x=h, edge_index=graph_pre.edge_index)
+        graph_suc = Data(x=h, edge_index=graph_suc.edge_index)
+        graph_dis = Data(x=h, edge_index=graph_dis.edge_index)
 
         return {'pre': graph_pre, 'suc': graph_suc, 'dis': graph_dis}
 
