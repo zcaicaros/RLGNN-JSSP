@@ -94,14 +94,15 @@ class MLP(torch.nn.Module):
 
 class RLGNNLayer(MessagePassing):
     def __init__(self,
+                 num_mlp_layer=2,
                  in_chnl=8,
                  hidden_chnl=256,
                  out_chnl=8):
         super(RLGNNLayer, self).__init__()
 
-        self.module_pre = MLP(in_chnl=in_chnl, hidden_chnl=hidden_chnl, out_chnl=out_chnl)
-        self.module_suc = MLP(in_chnl=in_chnl, hidden_chnl=hidden_chnl, out_chnl=out_chnl)
-        self.module_dis = MLP(in_chnl=in_chnl, hidden_chnl=hidden_chnl, out_chnl=out_chnl)
+        self.module_pre = MLP(num_layers=num_mlp_layer, in_chnl=in_chnl, hidden_chnl=hidden_chnl, out_chnl=out_chnl)
+        self.module_suc = MLP(num_layers=num_mlp_layer, in_chnl=in_chnl, hidden_chnl=hidden_chnl, out_chnl=out_chnl)
+        self.module_dis = MLP(num_layers=num_mlp_layer, in_chnl=in_chnl, hidden_chnl=hidden_chnl, out_chnl=out_chnl)
 
     def reset_parameters(self):
         reset(self.module_pre)
@@ -126,7 +127,7 @@ class RLGNNLayer(MessagePassing):
         out_suc = self.module_suc(out_suc)
         out_dis = self.module_dis(out_dis)
 
-        # graphs after processed by this layer
+        # new graphs after processed by this layer
         graph_pre = Data(x=out_pre, edge_index=graph_pre.edge_index)
         graph_suc = Data(x=out_suc, edge_index=graph_suc.edge_index)
         graph_dis = Data(x=out_dis, edge_index=graph_dis.edge_index)
@@ -134,14 +135,41 @@ class RLGNNLayer(MessagePassing):
         return {'pre': graph_pre, 'suc': graph_suc, 'dis': graph_dis}
 
 
+class RLGNN(torch.nn.Module):
+    def __init__(self,
+                 num_mlp_layer=2,
+                 num_layer=3,
+                 in_chnl=8,
+                 hidden_chnl=256,
+                 out_chnl=8):
+        super(RLGNN, self).__init__()
+
+        self.layers = torch.nn.ModuleList()
+
+        for l in range(num_layer):
+            if l == 0:  # initial layer
+                self.layers.append(RLGNNLayer(num_mlp_layer=num_mlp_layer,
+                                              in_chnl=in_chnl,
+                                              hidden_chnl=hidden_chnl,
+                                              out_chnl=out_chnl))
+            else:  # the rest layers
+                self.layers.append(RLGNNLayer(num_mlp_layer=num_mlp_layer,
+                                              in_chnl=out_chnl,
+                                              hidden_chnl=hidden_chnl,
+                                              out_chnl=out_chnl))
+
+    def forward(self, **graphs):
+        for layer in self.layers:
+            graphs = layer(**graphs)
+        return graphs
 
 
 if __name__ == '__main__':
     random.seed(0)
     np.random.seed(1)
 
-    # dev = 'cuda' if torch.cuda.is_available() else 'cpu'
-    dev = 'cpu'
+    dev = 'cuda' if torch.cuda.is_available() else 'cpu'
+    # dev = 'cpu'
 
     s = Simulator(3, 3, verbose=False)
     print(s.machine_matrix)
@@ -152,14 +180,22 @@ if __name__ == '__main__':
 
     g_pre, g_suc, g_dis = to_pyg(g, dev)
 
+    # test mlp
     mlp = MLP().to(dev)
     # count_parameters(mlp)
     out = mlp(g_pre.x)
     mlp_grad = torch.autograd.grad(out.mean(), [param for param in mlp.parameters()])
 
-    rlgnn_layer = RLGNNLayer()
+    # test rlgnn_layer
+    rlgnn_layer = RLGNNLayer().to(dev)
+    # count_parameters(rlgnn_layer)
     new_graphs = rlgnn_layer(**{'pre': g_pre, 'suc': g_suc, 'dis': g_dis})
     loss = sum([pyg.x.mean() for pyg in new_graphs.values()])
     rlgnn_layer_grad = torch.autograd.grad(loss, [param for param in rlgnn_layer.parameters()])
 
-
+    # test rlgnn net
+    net = RLGNN().to(dev)
+    # count_parameters(net)
+    new_graphs = net(**{'pre': g_pre, 'suc': g_suc, 'dis': g_dis})
+    loss = sum([pyg.x.mean() for pyg in new_graphs.values()])
+    rlgnn_grad = torch.autograd.grad(loss, [param for param in net.parameters()])
