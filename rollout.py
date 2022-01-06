@@ -3,12 +3,13 @@ from pyjssp.simulators import Simulator
 import random
 import numpy
 import time
-from model import to_pyg, RLGNN
+from model import to_pyg, RLGNN, PolicyNet
 
 
-def rollout(s, dev, net=None):
+def rollout(s, dev, embedding_net=None, policy_net=None):
 
-    net.to(dev)
+    embedding_net.to(dev)
+    policy_net.to(dev)
 
     s.reset()
     done = False
@@ -30,13 +31,18 @@ def rollout(s, dev, net=None):
                 break  # env rollout finish
             g, r, done = s.observe(return_doable=True)
             # network forward goes here
-            if net is not None:
+            if embedding_net is not None and policy_net is not None:
                 g_pre, g_suc, g_dis = to_pyg(g, dev)
                 raw_feature = g_pre.x  # either pre, suc, or dis will work
                 pyg_graphs = {'pre': g_pre, 'suc': g_suc, 'dis': g_dis}
-                pyg_graphs = net(raw_feature, **pyg_graphs)
-            op_id = s.transit()
-            p_list.append(op_id)
+                pyg_graphs = embedding_net(raw_feature, **pyg_graphs)
+                feasible_op_id = s.get_doable_ops_in_list()
+                sampled_action, _ = policy_net(pyg_graphs['pre'].x, feasible_op_id)
+                s.transit(sampled_action)
+                p_list.append(sampled_action)
+            else:
+                op_id = s.transit()
+                p_list.append(op_id)
 
         if done:
             break  # env rollout finish
@@ -51,8 +57,9 @@ if __name__ == "__main__":
 
     dev = 'cuda' if torch.cuda.is_available() else 'cpu'
     s = Simulator(30, 30, verbose=False)
-    net = RLGNN()
-    rollout(s, dev, net)
+    embed = RLGNN()
+    policy = PolicyNet()
+    rollout(s, dev, embed, policy)
 
 
 

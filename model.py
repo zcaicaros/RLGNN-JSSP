@@ -1,14 +1,14 @@
 from pyjssp.simulators import Simulator
-import time
 import torch
 import random
 import numpy as np
 import networkx as nx
-from torch.nn.functional import relu
+from torch.nn.functional import relu, softmax
 from torch import Tensor
 from torch_geometric.data import Data
 from torch_geometric.nn.conv import MessagePassing
 from torch_geometric.nn.inits import reset
+from torch.distributions.categorical import Categorical
 
 
 def count_parameters(model, verbose=False):
@@ -179,6 +179,26 @@ class RLGNN(torch.nn.Module):
         return graphs
 
 
+class PolicyNet(torch.nn.Module):
+    def __init__(self,
+                 num_mlp_layer=2,
+                 in_chnl=8,
+                 hidden_chnl=256,
+                 out_chnl=1):
+        super(PolicyNet, self).__init__()
+
+        self.policy = MLP(num_layers=num_mlp_layer, in_chnl=in_chnl, hidden_chnl=hidden_chnl, out_chnl=out_chnl)
+
+    def forward(self, node_h, feasible_op_id):
+        logit = self.policy(node_h).view(-1)
+        pi = softmax(logit[feasible_op_id], dim=0)
+        dist = Categorical(probs=pi)
+        sampled_op_id = dist.sample()
+        sampled_op = feasible_op_id[dist.sample().item()]
+        log_prob = dist.log_prob(sampled_op_id)
+        return sampled_op, log_prob
+
+
 if __name__ == '__main__':
     random.seed(0)
     np.random.seed(1)
@@ -216,3 +236,8 @@ if __name__ == '__main__':
     new_graphs = net(raw_feature, **{'pre': g_pre, 'suc': g_suc, 'dis': g_dis})
     loss = sum([pyg.x.mean() for pyg in new_graphs.values()])
     rlgnn_grad = torch.autograd.grad(loss, [param for param in net.parameters()])
+
+    # test policy net
+    policy = PolicyNet().to(dev)
+    _, log_p = policy(new_graphs['pre'].x, s.get_doable_ops_in_list())
+    policy_grad = torch.autograd.grad(log_p, [param for param in net.parameters()])
