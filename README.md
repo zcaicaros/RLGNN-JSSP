@@ -39,7 +39,8 @@ The environment is based on their [code](https://github.com/Junyoungpark/pyjssp)
 ## Progress
 - [x] Environment rollout using random policy
 - [x] Reimplementation of GNN in the original paper
-- [x] Rollout the environment using GNN with sampled actions (**You can get running time for different problem sizes now, see below.**)
+- [x] Rollout the environment using GNN with sampled actions <br />
+&nbsp;&nbsp;(**You can get running time for different problem sizes now, see below.**)
 - [ ] Training code
 
 
