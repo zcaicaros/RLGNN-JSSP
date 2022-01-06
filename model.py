@@ -1,11 +1,13 @@
 from pyjssp.simulators import Simulator
+import time
 import torch
 import random
 import numpy as np
-import time
-import torch_geometric
-from torch_geometric.data import Data
 import networkx as nx
+from torch import Tensor
+from torch_geometric.data import Data
+from torch_geometric.nn.conv import MessagePassing
+from torch_geometric.nn.inits import reset
 
 
 def count_parameters(model, verbose=False):
@@ -90,13 +92,48 @@ class MLP(torch.nn.Module):
         return h
 
 
-class RLGNNLayer(torch.nn.Module):
+class RLGNNLayer(MessagePassing):
     def __init__(self,
-                 num_layers,
-                 in_chnl,
-                 hidden_chnl,
-                 out_chnl):
+                 in_chnl=8,
+                 hidden_chnl=256,
+                 out_chnl=8):
         super(RLGNNLayer, self).__init__()
+
+        self.module_pre = MLP(in_chnl=in_chnl, hidden_chnl=hidden_chnl, out_chnl=out_chnl)
+        self.module_suc = MLP(in_chnl=in_chnl, hidden_chnl=hidden_chnl, out_chnl=out_chnl)
+        self.module_dis = MLP(in_chnl=in_chnl, hidden_chnl=hidden_chnl, out_chnl=out_chnl)
+
+    def reset_parameters(self):
+        reset(self.module_pre)
+        reset(self.module_suc)
+        reset(self.module_dis)
+
+    def message(self, x_j: Tensor) -> Tensor:
+        return x_j
+
+    def forward(self, **graphs):
+        graph_pre = graphs['pre']
+        graph_suc = graphs['suc']
+        graph_dis = graphs['dis']
+
+        # message passing
+        out_pre = self.propagate(graph_pre.edge_index, x=graph_pre.x, size=None)
+        out_suc = self.propagate(graph_suc.edge_index, x=graph_suc.x, size=None)
+        out_dis = self.propagate(graph_dis.edge_index, x=graph_dis.x, size=None)
+
+        # process aggregated messages
+        out_pre = self.module_pre(out_pre)
+        out_suc = self.module_suc(out_suc)
+        out_dis = self.module_dis(out_dis)
+
+        # graphs after processed by this layer
+        graph_pre = Data(x=out_pre, edge_index=graph_pre.edge_index)
+        graph_suc = Data(x=out_suc, edge_index=graph_suc.edge_index)
+        graph_dis = Data(x=out_dis, edge_index=graph_dis.edge_index)
+
+        return {'pre': graph_pre, 'suc': graph_suc, 'dis': graph_dis}
+
+
 
 
 if __name__ == '__main__':
@@ -119,5 +156,10 @@ if __name__ == '__main__':
     # count_parameters(mlp)
     out = mlp(g_pre.x)
     mlp_grad = torch.autograd.grad(out.mean(), [param for param in mlp.parameters()])
+
+    rlgnn_layer = RLGNNLayer()
+    new_graphs = rlgnn_layer(**{'pre': g_pre, 'suc': g_suc, 'dis': g_dis})
+    loss = sum([pyg.x.mean() for pyg in new_graphs.values()])
+    rlgnn_layer_grad = torch.autograd.grad(loss, [param for param in rlgnn_layer.parameters()])
 
 
