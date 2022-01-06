@@ -53,6 +53,7 @@ def rollout(s, dev, embedding_net=None, policy_net=None):
 if __name__ == "__main__":
     random.seed(0)
     numpy.random.seed(1)
+    torch.manual_seed(1)
 
     dev = 'cuda' if torch.cuda.is_available() else 'cpu'
     s = Simulator(5, 5, verbose=False)

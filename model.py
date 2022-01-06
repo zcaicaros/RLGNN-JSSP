@@ -202,6 +202,7 @@ class PolicyNet(torch.nn.Module):
 if __name__ == '__main__':
     random.seed(0)
     np.random.seed(1)
+    torch.manual_seed(1)
 
     dev = 'cuda' if torch.cuda.is_available() else 'cpu'
     # dev = 'cpu'
