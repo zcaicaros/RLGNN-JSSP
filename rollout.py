@@ -29,8 +29,7 @@ def rollout(s, dev, embedding_net=None, policy_net=None):
             if done:
                 break  # env rollout finish
             g, r, done = s.observe(return_doable=True)
-            # network forward goes here
-            if embedding_net is not None and policy_net is not None:
+            if embedding_net is not None and policy_net is not None:  # network forward goes here
                 g_pre, g_suc, g_dis = to_pyg(g, dev)
                 raw_feature = g_pre.x  # either pre, suc, or dis will work
                 pyg_graphs = {'pre': g_pre, 'suc': g_suc, 'dis': g_dis}
@@ -56,7 +55,7 @@ if __name__ == "__main__":
     torch.manual_seed(1)
 
     dev = 'cuda' if torch.cuda.is_available() else 'cpu'
-    s = Simulator(5, 5, verbose=False)
+    s = Simulator(20, 100, verbose=False)
     embed = RLGNN()
     policy = PolicyNet()
     rollout(s, dev, embed, policy)
