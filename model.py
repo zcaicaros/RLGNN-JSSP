@@ -202,6 +202,21 @@ class PolicyNet(torch.nn.Module):
         return sampled_op, log_prob
 
 
+class CriticNet(torch.nn.Module):
+    def __init__(self,
+                 num_mlp_layer=2,
+                 in_chnl=8,
+                 hidden_chnl=256,
+                 out_chnl=1):
+        super(CriticNet, self).__init__()
+
+        self.critic = MLP(num_layers=num_mlp_layer, in_chnl=in_chnl, hidden_chnl=hidden_chnl, out_chnl=out_chnl)
+
+    def forward(self, node_h):
+        v = self.critic(node_h.sum(dim=0))
+        return v
+
+
 if __name__ == '__main__':
     random.seed(0)
     np.random.seed(1)
@@ -246,4 +261,10 @@ if __name__ == '__main__':
     # count_parameters(policy)
     _, log_p = policy(new_graphs['pre'].x, s.get_doable_ops_in_list())
     policy_grad = torch.autograd.grad(log_p, [param for param in policy.parameters()])
+
+    # test critic net
+    critic = CriticNet().to(dev)
+    # count_parameters(critic)
+    v = critic(new_graphs['pre'].x)
+    critic_grad = torch.autograd.grad(v, [param for param in critic.parameters()])
 

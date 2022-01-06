@@ -3,14 +3,17 @@ from pyjssp.simulators import Simulator
 import random
 import numpy
 import time
-from model import to_pyg, RLGNN, PolicyNet
+from model import to_pyg, RLGNN, PolicyNet, CriticNet
 
 
-def rollout(s, dev, embedding_net=None, policy_net=None):
+def rollout(s, dev, embedding_net=None, policy_net=None, critic_net=None):
 
-    if embedding_net is not None and policy_net is not None:
+    if embedding_net is not None and \
+            policy_net is not None and \
+            critic_net is not None:
         embedding_net.to(dev)
         policy_net.to(dev)
+        critic_net.to(dev)
 
     s.reset()
     done = False
@@ -29,15 +32,18 @@ def rollout(s, dev, embedding_net=None, policy_net=None):
             if done:
                 break  # env rollout finish
             g, r, done = s.observe(return_doable=True)
-            if embedding_net is not None and policy_net is not None:  # network forward goes here
+            if embedding_net is not None and \
+                    policy_net is not None and \
+                    critic_net is not None:  # network forward goes here
                 g_pre, g_suc, g_dis = to_pyg(g, dev)
                 raw_feature = g_pre.x  # either pre, suc, or dis will work
                 pyg_graphs = {'pre': g_pre, 'suc': g_suc, 'dis': g_dis}
                 pyg_graphs = embedding_net(raw_feature, **pyg_graphs)
                 feasible_op_id = s.get_doable_ops_in_list()
-                sampled_action, _ = policy_net(pyg_graphs['pre'].x, feasible_op_id)
+                sampled_action, _ = policy_net(pyg_graphs['pre'].x, feasible_op_id)  # either pre, suc, or dis will work
                 s.transit(sampled_action)
                 p_list.append(sampled_action)
+                v = critic_net(pyg_graphs['pre'].x)  # either pre, suc, or dis will work
             else:
                 op_id = s.transit()
                 p_list.append(op_id)
@@ -54,15 +60,40 @@ if __name__ == "__main__":
     numpy.random.seed(1)
     torch.manual_seed(1)
 
-    dev = 'cuda' if torch.cuda.is_available() else 'cpu'
-    s = Simulator(20, 100, verbose=False)
+    # j = [5, 10, 15, 20, 25, 30, 35, 40, 50]
+    # m = [5 for _ in range(len(j))]
+
+    m = [5, 10, 15, 20, 25, 30]
+    j = [30 for _ in range(len(m))]
+
+    # m = [5]
+    # j = [30]
+
     embed = RLGNN()
     policy = PolicyNet()
-    rollout(s, dev, embed, policy)
+    critic = CriticNet()
+    times = []
+    for p_m, p_j in zip(m, j):  # select problem size
+        print('Problem size = {(m={}, j={})}'.format(p_m, p_j))
+        # dev = 'cuda' if torch.cuda.is_available() else 'cpu'
+        dev = 'cpu'
+        s = Simulator(p_m, p_j, verbose=False)
+        _, t, _ = rollout(s, dev, embed, policy, critic)
+        times.append(t)
+
+    print(times)
 
 
+    a_fixed_m = [1.5847651958465576,
+                 1.8800926208496094,
+                 2.2510368824005127,
+                 3.1496520042419434,
+                 4.4323320388793945,
+                 5.982157468795776]
 
-
-
-
-
+    a_fixed_j = [1.5847651958465576,
+                 1.8800926208496094,
+                 2.2510368824005127,
+                 3.1496520042419434,
+                 4.4323320388793945,
+                 5.982157468795776]
