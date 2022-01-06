@@ -34,11 +34,12 @@ pip install ortools==9.0.9972
 pip install plotly==5.5.0
 pip install networkx==2.6.3
 ```
+The environment is based on their [code](https://github.com/Junyoungpark/pyjssp)
 
 ## Progress
 - [x] Environment rollout using random policy
 - [x] Reimplementation of GNN in the original paper
-- [x] Rollout the environment using GNN with sampled actions
+- [x] Rollout the environment using GNN with sampled actions (**You can get running time for different problem sizes now, see below.**)
 - [ ] Training code
 
 
