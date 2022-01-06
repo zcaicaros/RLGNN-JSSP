@@ -62,11 +62,11 @@ if __name__ == "__main__":
     numpy.random.seed(1)
     torch.manual_seed(1)
 
-    j = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50]
-    m = [5 for _ in range(len(j))]
+    # j = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50]
+    # m = [5 for _ in range(len(j))]
 
-    # m = [5, 10, 15, 20, 25, 30]
-    # j = [30 for _ in range(len(m))]
+    m = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50]
+    j = [30 for _ in range(len(m))]
 
     # m = [5]
     # j = [30]
@@ -91,5 +91,6 @@ if __name__ == "__main__":
 
     # print(times)
 
-    numpy.save('plt/RL-GNN_complexity_fixed_m=5_reimplement.npy', np.array(times))
+    # numpy.save('plt/RL-GNN_complexity_fixed_m=5_reimplement.npy', np.array(times))
+    numpy.save('plt/RL-GNN_complexity_fixed_j=30_reimplement.npy', np.array(times))
 
