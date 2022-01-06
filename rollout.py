@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 from pyjssp.simulators import Simulator
 import random
@@ -6,7 +7,7 @@ import time
 from model import to_pyg, RLGNN, PolicyNet, CriticNet
 
 
-def rollout(s, dev, embedding_net=None, policy_net=None, critic_net=None):
+def rollout(s, dev, embedding_net=None, policy_net=None, critic_net=None, verbose=True):
 
     if embedding_net is not None and \
             policy_net is not None and \
@@ -51,7 +52,8 @@ def rollout(s, dev, embedding_net=None, policy_net=None, critic_net=None):
         if done:
             break  # env rollout finish
     t2 = time.time()
-    print('All job finished, makespan={}. Rollout takes {} seconds'.format(s.global_time, t2 - t1))
+    if verbose:
+        print('All job finished, makespan={}. Rollout takes {} seconds'.format(s.global_time, t2 - t1))
     return p_list, t2 - t1, s.global_time
 
 
@@ -60,11 +62,11 @@ if __name__ == "__main__":
     numpy.random.seed(1)
     torch.manual_seed(1)
 
-    # j = [5, 10, 15, 20, 25, 30, 35, 40, 50]
-    # m = [5 for _ in range(len(j))]
+    j = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50]
+    m = [5 for _ in range(len(j))]
 
-    m = [5, 10, 15, 20, 25, 30]
-    j = [30 for _ in range(len(m))]
+    # m = [5, 10, 15, 20, 25, 30]
+    # j = [30 for _ in range(len(m))]
 
     # m = [5]
     # j = [30]
@@ -72,28 +74,22 @@ if __name__ == "__main__":
     embed = RLGNN()
     policy = PolicyNet()
     critic = CriticNet()
+    print('Warm start...')
+    for p_m, p_j in zip([5], [5]):  # select problem size
+        dev = 'cuda' if torch.cuda.is_available() else 'cpu'
+        # dev = 'cpu'
+        s = Simulator(p_m, p_j, verbose=False)
+        _, t, _ = rollout(s, dev, embed, policy, critic, verbose=False)
     times = []
     for p_m, p_j in zip(m, j):  # select problem size
-        print('Problem size = {(m={}, j={})}'.format(p_m, p_j))
-        # dev = 'cuda' if torch.cuda.is_available() else 'cpu'
-        dev = 'cpu'
+        print('Problem size = (m={}, j={})'.format(p_m, p_j))
+        dev = 'cuda' if torch.cuda.is_available() else 'cpu'
+        # dev = 'cpu'
         s = Simulator(p_m, p_j, verbose=False)
         _, t, _ = rollout(s, dev, embed, policy, critic)
         times.append(t)
 
-    print(times)
+    # print(times)
 
+    numpy.save('plt/RL-GNN_complexity_fixed_m=5_reimplement.npy', np.array(times))
 
-    a_fixed_m = [1.5847651958465576,
-                 1.8800926208496094,
-                 2.2510368824005127,
-                 3.1496520042419434,
-                 4.4323320388793945,
-                 5.982157468795776]
-
-    a_fixed_j = [1.5847651958465576,
-                 1.8800926208496094,
-                 2.2510368824005127,
-                 3.1496520042419434,
-                 4.4323320388793945,
-                 5.982157468795776]
