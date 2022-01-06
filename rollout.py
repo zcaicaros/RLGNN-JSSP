@@ -14,9 +14,7 @@ def rollout(s, dev, embedding_net=None, policy_net=None):
 
     s.reset()
     done = False
-    # g, r, done = s.observe()
-    # for n in g.nodes:
-    #     print(n, g.nodes[n])
+
     p_list = []
     t1 = time.time()
     while True:
