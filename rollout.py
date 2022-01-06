@@ -8,8 +8,9 @@ from model import to_pyg, RLGNN, PolicyNet
 
 def rollout(s, dev, embedding_net=None, policy_net=None):
 
-    embedding_net.to(dev)
-    policy_net.to(dev)
+    if embedding_net is not None and policy_net is not None:
+        embedding_net.to(dev)
+        policy_net.to(dev)
 
     s.reset()
     done = False
