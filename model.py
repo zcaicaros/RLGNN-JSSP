@@ -11,16 +11,19 @@ from torch_geometric.nn.inits import reset
 from torch.distributions.categorical import Categorical
 
 
-def count_parameters(model, verbose=False):
+def count_parameters(model, verbose=False, print_model=False):
     """
     model: torch nn
     """
+    if print_model:
+        print('Model:', model)
     pytorch_total_params = sum(p.numel() for p in model.parameters())
     if verbose:
         for name, param in model.named_parameters():
             if param.requires_grad:
                 print(name, param.data)
-    print('Model:', model, 'has {} parameters'.format(pytorch_total_params))
+
+    print('The model has {} parameters'.format(pytorch_total_params))
 
 
 def to_pyg(g, dev):
@@ -233,12 +236,13 @@ if __name__ == '__main__':
 
     # test rlgnn net
     net = RLGNN().to(dev)
-    # count_parameters(net)
+    count_parameters(net)
     new_graphs = net(raw_feature, **{'pre': g_pre, 'suc': g_suc, 'dis': g_dis})
     loss = sum([pyg.x.mean() for pyg in new_graphs.values()])
     rlgnn_grad = torch.autograd.grad(loss, [param for param in net.parameters()])
 
     # test policy net
     policy = PolicyNet().to(dev)
+    count_parameters(policy)
     _, log_p = policy(new_graphs['pre'].x, s.get_doable_ops_in_list())
-    policy_grad = torch.autograd.grad(log_p, [param for param in net.parameters()])
+    policy_grad = torch.autograd.grad(log_p, [param for param in policy.parameters()])
