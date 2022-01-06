@@ -1,4 +1,4 @@
-import torch.cuda
+import torch
 from pyjssp.simulators import Simulator
 import random
 import numpy
