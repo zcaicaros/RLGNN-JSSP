@@ -56,7 +56,7 @@ if __name__ == "__main__":
     numpy.random.seed(1)
 
     dev = 'cuda' if torch.cuda.is_available() else 'cpu'
-    s = Simulator(30, 30, verbose=False)
+    s = Simulator(5, 5, verbose=False)
     embed = RLGNN()
     policy = PolicyNet()
     rollout(s, dev, embed, policy)
