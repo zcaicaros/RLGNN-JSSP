@@ -236,13 +236,13 @@ if __name__ == '__main__':
 
     # test rlgnn net
     net = RLGNN().to(dev)
-    count_parameters(net)
+    # count_parameters(net)
     new_graphs = net(raw_feature, **{'pre': g_pre, 'suc': g_suc, 'dis': g_dis})
     loss = sum([pyg.x.mean() for pyg in new_graphs.values()])
     rlgnn_grad = torch.autograd.grad(loss, [param for param in net.parameters()])
 
     # test policy net
     policy = PolicyNet().to(dev)
-    count_parameters(policy)
+    # count_parameters(policy)
     _, log_p = policy(new_graphs['pre'].x, s.get_doable_ops_in_list())
     policy_grad = torch.autograd.grad(log_p, [param for param in policy.parameters()])
