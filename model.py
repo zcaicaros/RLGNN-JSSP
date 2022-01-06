@@ -4,6 +4,7 @@ import torch
 import random
 import numpy as np
 import networkx as nx
+from torch.nn.functional import relu
 from torch import Tensor
 from torch_geometric.data import Data
 from torch_geometric.nn.conv import MessagePassing
@@ -112,10 +113,14 @@ class RLGNNLayer(MessagePassing):
     def message(self, x_j: Tensor) -> Tensor:
         return x_j
 
-    def forward(self, **graphs):
+    def forward(self, raw_feature, **graphs):
+
         graph_pre = graphs['pre']
         graph_suc = graphs['suc']
         graph_dis = graphs['dis']
+
+        num_nodes = graph_pre.num_nodes  # either pre, suc, or dis will work
+        h_before_process = graph_pre.x  # either pre, suc, or dis will work
 
         # message passing
         out_pre = self.propagate(graph_pre.edge_index, x=graph_pre.x, size=None)
@@ -127,10 +132,18 @@ class RLGNNLayer(MessagePassing):
         out_suc = self.module_suc(out_suc)
         out_dis = self.module_dis(out_dis)
 
+        # prepare new graph node features
+        x = torch.cat([relu(out_pre),
+                       relu(out_suc),
+                       relu(out_dis),
+                       relu(h_before_process.sum(dim=0).tile(num_nodes, 1)),
+                       h_before_process,
+                       raw_feature])
+
         # new graphs after processed by this layer
-        graph_pre = Data(x=out_pre, edge_index=graph_pre.edge_index)
-        graph_suc = Data(x=out_suc, edge_index=graph_suc.edge_index)
-        graph_dis = Data(x=out_dis, edge_index=graph_dis.edge_index)
+        graph_pre = Data(x=x, edge_index=graph_pre.edge_index)
+        graph_suc = Data(x=x, edge_index=graph_suc.edge_index)
+        graph_dis = Data(x=x, edge_index=graph_dis.edge_index)
 
         return {'pre': graph_pre, 'suc': graph_suc, 'dis': graph_dis}
 
@@ -158,9 +171,9 @@ class RLGNN(torch.nn.Module):
                                               hidden_chnl=hidden_chnl,
                                               out_chnl=out_chnl))
 
-    def forward(self, **graphs):
+    def forward(self, raw_feature, **graphs):
         for layer in self.layers:
-            graphs = layer(**graphs)
+            graphs = layer(raw_feature, **graphs)
         return graphs
 
 
@@ -179,6 +192,8 @@ if __name__ == '__main__':
     g, r, done = s.observe()
 
     g_pre, g_suc, g_dis = to_pyg(g, dev)
+    # raw feature
+    raw_feature = g_pre.x
 
     # test mlp
     mlp = MLP().to(dev)
@@ -189,13 +204,13 @@ if __name__ == '__main__':
     # test rlgnn_layer
     rlgnn_layer = RLGNNLayer().to(dev)
     # count_parameters(rlgnn_layer)
-    new_graphs = rlgnn_layer(**{'pre': g_pre, 'suc': g_suc, 'dis': g_dis})
+    new_graphs = rlgnn_layer(raw_feature, **{'pre': g_pre, 'suc': g_suc, 'dis': g_dis})
     loss = sum([pyg.x.mean() for pyg in new_graphs.values()])
     rlgnn_layer_grad = torch.autograd.grad(loss, [param for param in rlgnn_layer.parameters()])
 
     # test rlgnn net
     net = RLGNN().to(dev)
     # count_parameters(net)
-    new_graphs = net(**{'pre': g_pre, 'suc': g_suc, 'dis': g_dis})
+    new_graphs = net(raw_feature, **{'pre': g_pre, 'suc': g_suc, 'dis': g_dis})
     loss = sum([pyg.x.mean() for pyg in new_graphs.values()])
     rlgnn_grad = torch.autograd.grad(loss, [param for param in net.parameters()])

@@ -8,6 +8,8 @@ from model import to_pyg, RLGNN
 
 def rollout(s, dev, net=None):
 
+    net.to(dev)
+
     s.reset()
     done = False
     # g, r, done = s.observe()
@@ -30,8 +32,9 @@ def rollout(s, dev, net=None):
             # network forward goes here
             if net is not None:
                 g_pre, g_suc, g_dis = to_pyg(g, dev)
+                raw_feature = g_pre.x  # either pre, suc, or dis will work
                 pyg_graphs = {'pre': g_pre, 'suc': g_suc, 'dis': g_dis}
-                pyg_graphs = net(**pyg_graphs)
+                pyg_graphs = net(raw_feature, **pyg_graphs)
             op_id = s.transit()
             p_list.append(op_id)
 
@@ -47,8 +50,8 @@ if __name__ == "__main__":
     numpy.random.seed(1)
 
     dev = 'cuda' if torch.cuda.is_available() else 'cpu'
-    s = Simulator(6, 6, verbose=False)
-    net = RLGNN().to(dev)
+    s = Simulator(30, 30, verbose=False)
+    net = RLGNN()
     rollout(s, dev, net)
 
 
