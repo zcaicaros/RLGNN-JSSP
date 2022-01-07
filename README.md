@@ -19,7 +19,10 @@ python 3.9.9
 
 CUDA 11.3
 
-pytorch 1.10.0
+pytorch 1.10.1
+```commandline
+pip3 install torch==1.10.1+cu113 torchvision==0.11.2+cu113 torchaudio===0.10.1+cu113 -f https://download.pytorch.org/whl/cu113/torch_stable.html
+```
 
 [PyG](https://github.com/pyg-team/pytorch_geometric) 2.0.2
 
@@ -33,6 +36,7 @@ pip install torch-geometric==2.0.2
 pip install ortools==9.0.9972
 pip install plotly==5.5.0
 pip install networkx==2.6.3
+pip install matplotlib==3.5.1
 ```
 The environment is based on their [code](https://github.com/Junyoungpark/pyjssp)
 
