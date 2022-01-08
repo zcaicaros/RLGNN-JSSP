@@ -86,12 +86,9 @@ class MachineManager:
 
 class NodeProcessingTimeMachineManager(MachineManager):
 
-    def __init__(self,
-                 machine_matrix,
-                 job_manager,
-                 delay=True,
-                 verbose=False):
+    def __init__(self, machine_matrix, job_manager, delay=True, verbose=False):
 
+        super().__init__(machine_matrix, job_manager, delay, verbose)
         machine_matrix = machine_matrix.astype(int)
 
         # Parse machine indices

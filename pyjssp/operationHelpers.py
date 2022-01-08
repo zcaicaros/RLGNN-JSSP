@@ -184,8 +184,7 @@ class JobManager:
         pos = calc_positions(g, half_width, half_height)
 
         if kwargs is None:
-            kwargs['figsize'] = (10, 5)
-            kwargs['dpi'] = 300
+            kwargs = {'figsize': (10, 5), 'dpi': 300}
 
         fig = plt.figure(**kwargs)
         ax = fig.add_subplot(1, 1, 1)
@@ -230,12 +229,8 @@ class JobManager:
 
 class NodeProcessingTimeJobManager(JobManager):
 
-    def __init__(self,
-                 machine_matrix,
-                 processing_time_matrix,
-                 embedding_dim=16,
-                 use_surrogate_index=True):
-
+    def __init__(self, machine_matrix, processing_time_matrix, embedding_dim=16, use_surrogate_index=True):
+        super().__init__(machine_matrix, processing_time_matrix, embedding_dim, use_surrogate_index)
         machine_matrix = machine_matrix.astype(int)
         processing_time_matrix = processing_time_matrix.astype(float)
 
@@ -369,6 +364,7 @@ class Job:
 class NodeProcessingTimeJob(Job):
 
     def __init__(self, job_id, machine_order, processing_time_order, embedding_dim):
+        super().__init__(job_id, machine_order, processing_time_order, embedding_dim)
         self.job_id = job_id
         self.ops = list()
         self.processing_time = np.sum(processing_time_order)
@@ -604,17 +600,11 @@ class Operation:
 
 class NodeProcessingTimeOperation(Operation):
 
-    def __init__(self,
-                 job_id,
-                 step_id,
-                 machine_id,
-                 complete_ratio,
-                 prev_op,
-                 processing_time,
-                 job,
-                 next_op=None,
+    def __init__(self, job_id, step_id, machine_id, complete_ratio, prev_op, processing_time, job, next_op=None,
                  disjunctive_ops=None):
 
+        super().__init__(job_id, step_id, machine_id, complete_ratio, prev_op, processing_time, job, next_op,
+                         disjunctive_ops)
         self.job_id = job_id
         self.step_id = step_id
         self.job = job
