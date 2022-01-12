@@ -80,17 +80,17 @@ if __name__ == "__main__":
         # dev = 'cpu'
         s = Simulator(p_m, p_j, verbose=False)
         _, t, _ = rollout(s, dev, embed, policy, critic, verbose=False)
-    times = []
+    '''times = []
     for p_m, p_j in zip(m, j):  # select problem size
         print('Problem size = (m={}, j={})'.format(p_m, p_j))
         dev = 'cuda' if torch.cuda.is_available() else 'cpu'
         # dev = 'cpu'
         s = Simulator(p_m, p_j, verbose=False)
         _, t, _ = rollout(s, dev, embed, policy, critic)
-        times.append(t)
+        times.append(t)'''
 
     # print(times)
 
     # numpy.save('plt/RL-GNN_complexity_fixed_m=5_reimplement.npy', np.array(times))
-    numpy.save('plt/RL-GNN_complexity_fixed_j=30_reimplement.npy', np.array(times))
+    # numpy.save('plt/RL-GNN_complexity_fixed_j=30_reimplement.npy', np.array(times))
 
