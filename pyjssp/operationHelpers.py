@@ -142,16 +142,17 @@ class JobManager:
                                        type=CONJUNCTIVE_TYPE,
                                        direction=FORWARD)
 
-                            for disj_op in op.disjunctive_ops:
-                                if disj_op.x['type'] != DONE_NODE_SIG:
-                                    g.add_edge(op.id, disj_op.id, type=DISJUNCTIVE_TYPE)
-
-                        if not_start_cond:
+                        if not_start_cond:  # Construct backward flow conjunctive edges only
                             if op.prev_op.x['type'] != DONE_NODE_SIG:
                                 g.add_edge(op.id, op.prev_op.id,
                                            processing_time=-1 * op.prev_op.processing_time,
                                            type=CONJUNCTIVE_TYPE,
                                            direction=BACKWARD)
+
+                        for disj_op in op.disjunctive_ops:  # Construct disjunctive edges
+                            if disj_op.x['type'] != DONE_NODE_SIG:
+                                g.add_edge(op.id, disj_op.id, type=DISJUNCTIVE_TYPE)
+
                 else:
                     g.add_node(op.id, **op.x)
                     if not_end_cond:  # Construct forward flow conjunctive edges only
@@ -160,13 +161,13 @@ class JobManager:
                                    type=CONJUNCTIVE_TYPE,
                                    direction=FORWARD)
 
-                    if not_start_cond:
+                    if not_start_cond:  # Construct backward flow conjunctive edges only
                         g.add_edge(op.id, op.prev_op.id,
                                    processing_time=-1 * op.prev_op.processing_time,
                                    type=CONJUNCTIVE_TYPE,
                                    direction=BACKWARD)
 
-                    for disj_op in op.disjunctive_ops:
+                    for disj_op in op.disjunctive_ops:  # Construct disjunctive edges
                         g.add_edge(op.id, disj_op.id, type=DISJUNCTIVE_TYPE)
 
         return g
