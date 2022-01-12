@@ -1,10 +1,10 @@
 import random
 from collections import OrderedDict
 import numpy as np
-#from pyjssp.operationHelpers import Operation, NodeProcessingTimeOperation
-from pyjssp.configs import (PROCESSING_NODE_SIG,
-                            DONE_NODE_SIG,
-                            DELAYED_NODE_SIG)
+#from semiMDP.operationHelpers import Operation, NodeProcessingTimeOperation
+from semiMDP.configs import (PROCESSING_NODE_SIG,
+                             DONE_NODE_SIG,
+                             DELAYED_NODE_SIG)
 
 
 class MachineManager:

@@ -1,5 +1,5 @@
 import numpy as np
-from pyjssp.simulators import Simulator
+from semiMDP.simulators import Simulator
 
 
 def FT06(*args, **kwargs):

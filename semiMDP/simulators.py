@@ -5,14 +5,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 import networkx as nx
 
-from pyjssp.jobShopSamplers import jssp_sampling
-from pyjssp.operationHelpers import (JobManager,
-                                     NodeProcessingTimeJobManager,
-                                     get_edge_color_map,
-                                     get_node_color_map)
-from pyjssp.machineHelpers import (MachineManager,
-                                   NodeProcessingTimeMachineManager)
-from pyjssp.configs import (N_SEP, SEP, NEW)
+from semiMDP.jobShopSamplers import jssp_sampling
+from semiMDP.operationHelpers import (JobManager,
+                                      NodeProcessingTimeJobManager,
+                                      get_edge_color_map,
+                                      get_node_color_map)
+from semiMDP.machineHelpers import (MachineManager,
+                                    NodeProcessingTimeMachineManager)
+from semiMDP.configs import (N_SEP, SEP, NEW)
 
 
 class Simulator:
