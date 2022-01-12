@@ -288,15 +288,15 @@ class NodeProcessingTimeJobManager(JobManager):
                                        distance=(op.next_op.complete_ratio-op.complete_ratio),
                                        type=CONJUNCTIVE_TYPE,
                                        direction=FORWARD)
-
-                            for disj_op in op.disjunctive_ops:
-                                g.add_edge(op.id, disj_op.id, type=DISJUNCTIVE_TYPE)
-
-                        if not_start_cond:
+                        if not_start_cond:  # Construct backward flow conjunctive edges only
                             g.add_edge(op.id, op.prev_op.id,
                                        distance=-(op.complete_ratio - op.prev_op.complete_ratio),
                                        type=CONJUNCTIVE_TYPE,
                                        direction=BACKWARD)
+
+                        for disj_op in op.disjunctive_ops:  # Construct disjunctive edges
+                            g.add_edge(op.id, disj_op.id, type=DISJUNCTIVE_TYPE)
+
                 else:
                     g.add_node(op.id, **op.x)
                     if not_end_cond:  # Construct forward flow conjunctive edges only
@@ -305,14 +305,14 @@ class NodeProcessingTimeJobManager(JobManager):
                                    type=CONJUNCTIVE_TYPE,
                                    direction=FORWARD)
 
-                        for disj_op in op.disjunctive_ops:
-                            g.add_edge(op.id, disj_op.id, type=DISJUNCTIVE_TYPE)
-
-                    if not_start_cond:
+                    if not_start_cond:  # Construct backward flow conjunctive edges only
                         g.add_edge(op.id, op.prev_op.id,
                                    distance=-(op.complete_ratio - op.prev_op.complete_ratio),
                                    type=CONJUNCTIVE_TYPE,
                                    direction=BACKWARD)
+
+                    for disj_op in op.disjunctive_ops:  # Construct disjunctive edges
+                        g.add_edge(op.id, disj_op.id, type=DISJUNCTIVE_TYPE)
         return g
 
 

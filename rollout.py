@@ -33,6 +33,7 @@ def rollout(s, dev, embedding_net=None, policy_net=None, critic_net=None, verbos
             if done:
                 break  # env rollout finish
             g, r, done = s.observe(return_doable=True)
+            print(g.number_of_edges())
             if embedding_net is not None and \
                     policy_net is not None and \
                     critic_net is not None:  # network forward goes here
@@ -75,7 +76,7 @@ if __name__ == "__main__":
     policy = PolicyNet()
     critic = CriticNet()
     print('Warm start...')
-    for p_m, p_j in zip([5], [5]):  # select problem size
+    for p_m, p_j in zip([3], [3]):  # select problem size
         dev = 'cuda' if torch.cuda.is_available() else 'cpu'
         # dev = 'cpu'
         s = Simulator(p_m, p_j, verbose=False)
