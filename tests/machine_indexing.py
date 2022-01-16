@@ -1,4 +1,4 @@
-from semiMDP.simulators import Simulator
+from pyjssp.simulators import Simulator
 
 if __name__ == "__main__":
     s = Simulator(5, 5, delay=False)

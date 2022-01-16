@@ -1,4 +1,4 @@
-from semiMDP.simulators import Simulator
+from pyjssp.simulators import Simulator
 import torch
 import random
 import numpy as np
@@ -108,6 +108,7 @@ class RLGNNLayer(MessagePassing):
         self.module_suc = MLP(num_layers=num_mlp_layer, in_chnl=in_chnl, hidden_chnl=hidden_chnl, out_chnl=out_chnl)
         self.module_dis = MLP(num_layers=num_mlp_layer, in_chnl=in_chnl, hidden_chnl=hidden_chnl, out_chnl=out_chnl)
         self.module_merge = MLP(num_layers=num_mlp_layer, in_chnl=6*out_chnl, hidden_chnl=hidden_chnl, out_chnl=out_chnl)
+        self.reset_parameters()
 
     def reset_parameters(self):
         reset(self.module_pre)
@@ -197,7 +198,7 @@ class PolicyNet(torch.nn.Module):
         pi = softmax(logit[feasible_op_id], dim=0)
         dist = Categorical(probs=pi)
         sampled_op_id = dist.sample()
-        sampled_op = feasible_op_id[dist.sample().item()]
+        sampled_op = feasible_op_id[sampled_op_id.item()]
         log_prob = dist.log_prob(sampled_op_id)
         return sampled_op, log_prob
 

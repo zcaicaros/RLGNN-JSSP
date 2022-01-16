@@ -1,5 +1,5 @@
-from semiMDP.simulators import NodeProcessingTimeSimulator
-from semiMDP.utils import pprint_graph
+from pyjssp.simulators import NodeProcessingTimeSimulator
+from pyjssp.utils import pprint_graph
 
 if __name__ == "__main__":
 

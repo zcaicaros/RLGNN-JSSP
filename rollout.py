@@ -1,6 +1,6 @@
 import numpy as np
 import torch
-from semiMDP.simulators import Simulator
+from pyjssp.simulators import Simulator
 import random
 import numpy
 import time
@@ -62,35 +62,38 @@ if __name__ == "__main__":
     numpy.random.seed(1)
     torch.manual_seed(1)
 
-    # j = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50]
-    # m = [5 for _ in range(len(j))]
+    setting = 'm=5'  # 'm=5', 'j=30', 'free_for_all'
 
-    m = [5, 10, 15, 20, 25, 30]
-    j = [30 for _ in range(len(m))]
-
-    # m = [5]
-    # j = [30]
+    if setting == 'm=5':
+        j = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50]
+        m = [5 for _ in range(len(j))]
+    elif setting == 'j=30':
+        m = [5, 10, 15, 20, 25, 30]
+        j = [30 for _ in range(len(m))]
+    else:
+        m = [5]
+        j = [30]
+    save_dir = 'plt/RL-GNN_complexity_{}_reimplement.npy'.format(setting)
 
     embed = RLGNN()
     policy = PolicyNet()
     critic = CriticNet()
     print('Warm start...')
-    for p_m, p_j in zip([3], [3]):  # select problem size
+    for p_m, p_j in zip([5], [5]):  # select problem size
         dev = 'cuda' if torch.cuda.is_available() else 'cpu'
         # dev = 'cpu'
         s = Simulator(p_m, p_j, verbose=False)
         _, t, _ = rollout(s, dev, embed, policy, critic, verbose=False)
-    '''times = []
+    times = []
     for p_m, p_j in zip(m, j):  # select problem size
         print('Problem size = (m={}, j={})'.format(p_m, p_j))
         dev = 'cuda' if torch.cuda.is_available() else 'cpu'
         # dev = 'cpu'
         s = Simulator(p_m, p_j, verbose=False)
         _, t, _ = rollout(s, dev, embed, policy, critic)
-        times.append(t)'''
+        times.append(t)
 
     # print(times)
 
-    # numpy.save('plt/RL-GNN_complexity_fixed_m=5_reimplement.npy', np.array(times))
-    # numpy.save('plt/RL-GNN_complexity_fixed_j=30_reimplement.npy', np.array(times))
+    numpy.save(save_dir, np.array(times))
 

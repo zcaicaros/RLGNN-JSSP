@@ -1,6 +1,6 @@
 import numpy as np
 import networkx as nx
-from semiMDP import Simulator
+from pyjssp import Simulator
 from rollout import rollout
 
 
