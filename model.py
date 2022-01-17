@@ -1,4 +1,4 @@
-from pyjssp.simulators import Simulator
+from semiMDP.simulators import Simulator
 import torch
 import random
 import numpy as np

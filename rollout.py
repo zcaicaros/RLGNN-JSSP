@@ -1,6 +1,6 @@
 import numpy as np
 import torch
-from pyjssp.simulators import Simulator
+from semiMDP.simulators import Simulator
 import random
 import numpy
 import time
@@ -62,14 +62,14 @@ if __name__ == "__main__":
     numpy.random.seed(1)
     torch.manual_seed(1)
 
-    setting = 'm=5'  # 'm=5', 'j=30', 'free_for_all'
+    setting = 'm=10'  # 'm=10', 'j=40', 'free_for_all'
 
-    if setting == 'm=5':
-        j = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50]
-        m = [5 for _ in range(len(j))]
-    elif setting == 'j=30':
-        m = [5, 10, 15, 20, 25, 30]
-        j = [30 for _ in range(len(m))]
+    if setting == 'm=10':
+        j = [10, 15, 20, 25, 30, 35, 40]
+        m = [10 for _ in range(len(j))]
+    elif setting == 'j=40':
+        m = [10, 15, 20, 25, 30, 35, 40]
+        j = [40 for _ in range(len(m))]
     else:
         m = [5]
         j = [30]
