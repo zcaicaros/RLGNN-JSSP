@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-fixed = 'j=30'  # 'j=30', 'm=5'
+fixed = 'm=5'  # 'j=30', 'm=5'
 datas = [
     'RL-GNN_complexity_fixed_{}.npy'.format(fixed),
     'RL-GNN_complexity_fixed_{}_reimplement.npy'.format(fixed),
