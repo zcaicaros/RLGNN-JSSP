@@ -62,7 +62,7 @@ if __name__ == "__main__":
     numpy.random.seed(1)
     torch.manual_seed(1)
 
-    setting = 'm=10'  # 'm=10', 'j=40', 'free_for_all'
+    setting = 'free_for_all'  # 'm=10', 'j=40', 'free_for_all'
 
     if setting == 'm=10':
         j = [10, 15, 20, 25, 30, 35, 40]
@@ -71,8 +71,10 @@ if __name__ == "__main__":
         m = [10, 15, 20, 25, 30, 35, 40]
         j = [40 for _ in range(len(m))]
     else:
-        m = [5]
-        j = [30]
+        j = [15, 20, 20, 30, 30, 50, 50, 100, 10, 20, 6, 10, 20]
+        m = [15, 15, 20, 15, 20, 15, 20, 20, 10, 15, 6, 10, 5]
+        # j = [10, 15, 20, 10, 15, 20, 30, 15, 20, 20, 50, 10, 20]
+        # m = [5, 5, 5, 10, 10, 10, 10, 15, 10, 15, 10, 10, 20]
     save_dir = 'plt/RL-GNN_complexity_{}_reimplement.npy'.format(setting)
 
     embed = RLGNN()
