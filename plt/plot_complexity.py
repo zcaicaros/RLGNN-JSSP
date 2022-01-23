@@ -31,8 +31,8 @@ obj2 = times_for_plot[2]  # ours-500
 
 # plotting...
 plt.figure(figsize=(5.3, 5))
-plt.xlabel('Number of jobs {}'.format(r'$n$'), {'size': x_label_scale})
-# plt.xlabel('Number of machines {}'.format(r'$m$'), {'size': x_label_scale})
+# plt.xlabel('Number of jobs {}'.format(r'$n$'), {'size': x_label_scale})
+plt.xlabel('Number of machines {}'.format(r'$m$'), {'size': x_label_scale})
 
 plt.ylabel('Seconds', {'size': y_label_scale})
 plt.grid()
