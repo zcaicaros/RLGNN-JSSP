@@ -78,5 +78,9 @@ run
 ```
 python3 rollout.py
 ```
-
+### Run Time Compare with Original Paper
+#### For fixed number of jobs = 30
+![For fixed number of jobs = 30](./plt/complexity_analysis_j=30.png)
+#### For fixed number of machines = 5
+![For fixed number of machines = 5](./plt/complexity_analysis_m=5.png)
 
