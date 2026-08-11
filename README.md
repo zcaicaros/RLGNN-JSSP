@@ -1,3 +1,5 @@
+
+
 # Reimplement of Paper: "Learning to schedule job-shop problems: representation and policy learning using graph neural network and reinforcement learning"
 
 
@@ -50,7 +52,7 @@ The environment is based on their [code](https://github.com/Junyoungpark/pyjssp)
 
 ## Use code
 ### Test rollout with random policy computes the correct makespan
-Adjust the parameters in `verify_rollout.py`. Instances is randomly generated w.r.t the given size.
+Adjust the parameters in `verify_rollout.py`. Instances are randomly generated w.r.t the given size.
 ```buildoutcfg
 if __name__ == "__main__":
     np.random.seed(1)
@@ -83,4 +85,3 @@ python3 rollout.py
 ![For fixed number of jobs = 30](./plt/complexity_analysis_j=30.png)
 #### For fixed number of machines = 5
 ![For fixed number of machines = 5](./plt/complexity_analysis_m=5.png)
-
